@@ -30,7 +30,7 @@ Rota Publica que retornar os dados do endereço em caso de sucesso <p>
 Retornos Possíveis: <p>
 
 Formato Json
-```json
+```apacheconfig
 200 OK
 {
     success: true,
@@ -64,7 +64,7 @@ Formato XML
 ````
 
 Se For Informado um CEP Inválido
-```json
+```apacheconfig
 400 OK
 {
     success: false,
@@ -90,7 +90,7 @@ Rota Publica que retornar os dados do endereço em caso de sucesso <p>
 Retornos Possíveis: <p>
 
 Formato Json
-```json
+```apacheconfig
 200 OK
 {
 success: true,
@@ -160,7 +160,7 @@ Formato XML
 ````
 
 Se For Informado um Logadouro ou CEP Inválido
-```json
+```apacheconfig
 400 OK
 {
     success: false,
