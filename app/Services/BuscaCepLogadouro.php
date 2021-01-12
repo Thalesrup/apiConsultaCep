@@ -1,80 +1,89 @@
 <?php
 
 namespace App\Services;
-use GuzzleHttp\Client;
+use GuzzleHttp;
 use DOMDocument;
+use App\Http\Controllers\ApiController;
 
-class BuscaCepLogadouro
+class BuscaCepLogadouro extends ApiController
 {
     protected $client;
 
     public function __construct()
     {
-        $this->client = new Client();
+        $this->client = new GuzzleHttp\Client;
     }
 
     public function montaRequisicao($parametro)
     {
-        $response = $this->client->request('POST', env('URL_CONSULTA_CORREIOS'), [
-            'form_params' => [
-                env('CONSULTA_POR_CEP') => $parametro
-            ]
-        ]);
 
-        $body = $response->getBody(true);
-        return $body;
+        try {
+            $response = $this->client->request('POST', env('URL_CONSULTA_CORREIOS'), [
+                'form_params' => [
+                    env('CONSULTA_POR_CEP') => $parametro,
+                    'tipoCEP'    => 'ALL',
+                    'semelhante' => 'N'
+                ]
+            ]);
+
+            $body = $response->getBody(true);
+
+            return $body;
+
+        } catch (GuzzleHttp\Exception\TooManyRedirectsException $e) {
+            return (object)['success' => false, 'message' =>'Serviço Indisponivel no Momento', 'status' => $e->getCode()];
+        }
+
     }
 
     public function buscar($parametro)
     {
         $htmlResponse = $this->montaRequisicao($parametro);
 
+        if(isset($htmlResponse->success)){
+            return $htmlResponse;
+        }
+
         libxml_use_internal_errors(true);
-        $dom = new DOMDocument;
-        $dom->preserveWhiteSpace = false;
-        $dom->loadHTML($htmlResponse);
-        $rows = $dom->getElementsByTagName('tr');
+        $DOM   = new DOMDocument();
+        $DOM->preserveWhiteSpace = false;
+        $DOM->loadHTML($htmlResponse);
 
-        if ($rows->length <= 1) {
-            return [
-                'error' => true,
-                'message' => 'Nenhum endereço encontrado'
-            ];
+        $trOrTableList = $DOM->getElementsByTagName("table");
+
+        if($trOrTableList->length <= 0){
+            return (object)['success' => false, 'message' =>'Informe um CEP ou Logadouro Válido', 'status' => 400];
         }
 
-        $header = [];
-        foreach ($rows as $row) {
-            $tds = $row->childNodes;
-            foreach ($tds as $index => $td) {
-                if ($index % 2 != 0) {
-                    continue;
-                }
-                $header[$index] = preg_replace('/:/', '', $td->nodeValue);
+        foreach ($trOrTableList as $tr)  {
+            $row = [];
+                foreach ($tr->getElementsByTagName("td") as $td)  {
+                    $row[] = trim($td->textContent);
             }
-            break;
+
+            $rows[] = $row;
+            $chavesCallback = explode(':', trim(str_replace('/', '', $tr->getElementsByTagName("tr")[0]->nodeValue)));
+            array_pop($chavesCallback);
+            $chavesCallback = $this->validaChavesJsonRetorno($chavesCallback);
         }
 
-        $addresses = [];
-        foreach ($rows as $index => $row) {
-            if ($index == 0) {
-                continue;
-            }
-
-            $tds = $row->childNodes;
-            $address = [];
-            foreach ($tds as $tdIndex => $td) {
-                if ($tdIndex % 2 != 0) {
-                    continue;
-                }
-                $address[$header[$tdIndex]] = $td->nodeValue;
-            }
-            array_push($addresses, $address);
+        $validarRetorno = array_chunk($rows[0],4);
+        foreach($validarRetorno as $chave => $dados){
+           $arrayResultado[] = array_combine($chavesCallback, $dados);
         }
 
-        return [
-            'error' => false,
-            'addresses' => $addresses
-        ];
+        return (self::getTypeOutout() == 'xml') ? $arrayResultado  : ['enderecos' => $arrayResultado];
+
     }
+
+    public function validaChavesJsonRetorno($arrayChaves)
+    {
+        if(count($arrayChaves) == 4){
+           return $arrayChaves;
+        } else {
+            return ['LogradouroNome', 'BairroDistrito', 'LocalidadeUF', 'CEP'];
+        }
+    }
+
 
 }

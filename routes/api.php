@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ApiController;
+use App\Http\Controllers\BuscaCepLogadouroController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,5 +19,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('buscaEndereco/cep/{cep}', [ApiController::class, 'getCep']);
-Route::get('buscaEndereco/logadouro/{logadouro}', [ApiController::class, 'getLogadouro']);
+Route::get('buscaEndereco/cep/{cep}', [BuscaCepLogadouroController::class, 'getCep']);
+Route::get('buscaEndereco/logadouro/{logadouro}', [BuscaCepLogadouroController::class, 'getLogadouro']);
+
+Route::fallback(function(){
+    return response()->json(['message' => ''], 404);
+})->name('api.fallback.404');

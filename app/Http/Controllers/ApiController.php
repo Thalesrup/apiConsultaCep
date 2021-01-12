@@ -2,26 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\Requests\CepRequest;
-use App\Http\Requests\LogadouroRequest;
-use App\Services\BuscaCepLogadouro;
 
 class ApiController extends Controller
 {
-    private $requisicao;
 
-    public function getCep(Request $request)
+    static $tipoSaida;
+
+    public function sendResponse($success = true, $message, $dataCallback = [], $codeHttp)
     {
-        $this->requisicao = new BuscaCepLogadouro();
-        $responseCorreios = $this->requisicao->buscar($request->cep);
-        return response()->json($responseCorreios);
-//        return response()->json(['msg' => "Cep Buscado $request->cep"], 200);
+        $response = [
+            'success' => $success,
+            'message' => $message,
+            'data'    => $dataCallback,
+        ];
+
+        return response()->json($response, $codeHttp);
     }
 
-    public function getLogadouro(Request $request)
+    public function mountResponseToXML($arrayData, $itemPaiCustom = 'itens', $itemCustom = 'item', $itemTitle = 'xmlLista') {
+
+        $xmlDoc   = new \DOMDocument("1.0","UTF-8");
+        $root     = $xmlDoc->appendChild($xmlDoc->createElement("root"));
+        $root->appendChild($xmlDoc->createElement("title",$itemTitle));
+        $tabUsers = $root->appendChild($xmlDoc->createElement($itemPaiCustom));
+
+        foreach($arrayData as $data){
+            if(!empty($data)){
+                $tabUser = $tabUsers->appendChild($xmlDoc->createElement($itemCustom));
+                foreach($data as $key => $val){
+                    $tabUser->appendChild($xmlDoc->createElement(preg_replace("/[^A-Za-z0-9]/", "",$key), $val));
+                }
+            }
+        }
+
+        $tabUser->formatOutput = TRUE;
+        return $xmlDoc->saveXML();
+    }
+
+    static function getTypeOutout()
     {
-        return response()->json(['msg' => "Logadouro Buscado $request->logadouro"], 200);
+        return self::$tipoSaida;
+    }
+
+    static function setTypeOutput($saida)
+    {
+        self::$tipoSaida = $saida;
     }
 
 }

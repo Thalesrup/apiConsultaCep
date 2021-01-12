@@ -1,62 +1,205 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# ApiCunsulta Endereços (CEP - Logadouro)
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+#### About 
+ApiConsultaCep usa como base para consulta http://www.buscacep.correios.com.br/sistemas/buscacep/resultadoBuscaCepEndereco.cfm
+####
 
-## About Laravel
+### Highlights
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Utilizado Laravel Framework 8
+- Implentado metodo getCEP()
+- Implementado Validação de CEP (valida quantidade minima de numeros informados)
+- Implementado getLogadouro() (Pode ser passado tanto cep como nome da rua, bairro cidade, ect)
+- Implementado Validação para Prever acentuações nas requisições
+- Implementado Callback que retorna o resultado em formato XML para CEP e Logadouro (adicionar ao final ?xml)
+- Implementado metodo Abstrato para formatar array e gerar saida XML, descartando a necessidade de criar um arquivo para exibição
+- Implementado Rota Callback Fail 404 formato json
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+##### Routes Public Buscar Por Cep
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+URL: 
+/api/buscaEndereco/cep/{cep}
+<p>
+Exemplo: /api/buscaEndereco/cep/92425553 ou 92425-553
+<p>
+Exemplo Utilizando callback xml: /api/buscaEndereco/cep/92425553?xml
+<p>
+Método:
+GET <p>
+Rota Publica que retornar os dados do endereço em caso de sucesso <p>
+Retornos Possíveis: <p>
 
-## Learning Laravel
+Formato Json
+```json
+200 OK
+{
+    success: true,
+    message: "Requisição Bem Sucedida",
+    data: {
+        enderecos: [
+          {
+            LogradouroNome: "Rua João Maria da Fonseca ",
+            BairroDistrito: "São José ",
+            LocalidadeUF: "Canoas/RS ",
+            CEP: "92425-553"
+          }
+        ],
+    }
+}
+```
+Formato XML
+````xml
+200 OK
+<root>
+    <title>lista Enderecos</title>
+    <enderecos>
+        <endereco>
+            <LogradouroNome>Rua João Maria da Fonseca</LogradouroNome>
+            <BairroDistrito>São José</BairroDistrito>
+            <LocalidadeUF>Canoas/RS</LocalidadeUF>
+            <CEP>92425-553</CEP>
+        </endereco>
+    </enderecos>
+</root>
+````
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Se For Informado um CEP Inválido
+```json
+400 OK
+{
+    success: false,
+    message: "Erro Ao Validar Cep, Digite um Numero Válido Exemplo(92425553 ou 92425-553)",
+    data: false
+}
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+##### Routes Public Buscar Por Logadouro
 
-## Laravel Sponsors
+URL: 
+/api/buscaEndereco/logadouro/{logadouroOrCep}
+<p>
+Exemplo: /api/buscaEndereco/logadouro/rua caique ou 92425553
+<p>
+Pode ser passado tanto Rua, avenida, Cidade, CEP ect, como parametro
+<p>
+Exemplo Utilizando callback xml: /api/buscaEndereco/logadouro/av caique?xml
+<p>
+Método:
+GET <p>
+Rota Publica que retornar os dados do endereço em caso de sucesso <p>
+Retornos Possíveis: <p>
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+Formato Json
+```json
+200 OK
+{
+success: true,
+message: "Requisição Bem Sucedida",
+data: {
+        enderecos: [
+            {
+                LogradouroNome: "Rua Caique Chagas de Assis ",
+                BairroDistrito: "Parque Residencial Villa dos Inglezes ",
+                LocalidadeUF: "Sorocaba/SP ",
+                CEP: "18051-886"
+            },
+            {
+                LogradouroNome: "Rua Caique Ferreira ",
+                BairroDistrito: "Residencial Betaville ",
+                LocalidadeUF: "Campo Grande/MS ",
+                CEP: "79060-354"
+            },
+            {
+                LogradouroNome: "Rua Caíque Ferreira ",
+                BairroDistrito: "Jardim Alvorada ",
+                LocalidadeUF: "Piracicaba/SP ",
+                CEP: "13425-702"
+            },
+            {
+                LogradouroNome: "Rua do Caíque ",
+                BairroDistrito: "Recanto das Árvores ",
+                LocalidadeUF: "Camaçari/BA ",
+                CEP: "42807-702"
+            }
+        ]
+    }
+}
+```
+Formato XML
+````xml
+200 OK
+<root>
+<title>lista Enderecos</title>
+    <enderecos>
+        <endereco>
+            <LogradouroNome>Rua Caique Chagas de Assis </LogradouroNome>
+            <BairroDistrito>Parque Residencial Villa dos Inglezes </BairroDistrito>
+            <LocalidadeUF>Sorocaba/SP </LocalidadeUF>
+            <CEP>18051-886</CEP>
+        </endereco>
+        <endereco>
+            <LogradouroNome>Rua Caique Ferreira </LogradouroNome>
+            <BairroDistrito>Residencial Betaville </BairroDistrito>
+            <LocalidadeUF>Campo Grande/MS </LocalidadeUF>
+            <CEP>79060-354</CEP>
+        </endereco>
+        <endereco>
+            <LogradouroNome>Rua Caíque Ferreira </LogradouroNome>
+            <BairroDistrito>Jardim Alvorada </BairroDistrito>
+            <LocalidadeUF>Piracicaba/SP </LocalidadeUF>
+            <CEP>13425-702</CEP>
+        </endereco>
+        <endereco>
+            <LogradouroNome>Rua do Caíque </LogradouroNome>
+            <BairroDistrito>Recanto das Árvores </BairroDistrito>
+            <LocalidadeUF>Camaçari/BA </LocalidadeUF>
+            <CEP>42807-702</CEP>
+        </endereco>
+    </enderecos>
+</root>
+````
 
-### Premium Partners
+Se For Informado um Logadouro ou CEP Inválido
+```json
+400 OK
+{
+    success: false,
+    message: "Informe um CEP ou Logadouro Válido",
+    data: false
+}
+````
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/)**
-- **[OP.GG](https://op.gg)**
+#### Setup
+````bash
+# clone
+git clone https://github.com/Thalesrup/apiConsultaCep
 
-## Contributing
+# Acessar projeto
+cd apiConsultaCep
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Executar
+composer install
+php artisan serve
 
-## Code of Conduct
+###Testar Request Logadouro
+#Retorno json
+$ curl -H 'content-type: application/json' -H 'Accept: application/json' -v -X GET http://127.0.0.1:8000/api/buscaEndereco/logadouro/rua caique
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+#Retorno XML
+$ curl -H 'content-type: application/json' -H 'Accept: application/xml' -v -X GET http://127.0.0.1:8000/api/buscaEndereco/logadouro/rua caique?xml
 
-## Security Vulnerabilities
+# Acessar pelo Browser
+http://127.0.0.1:8000/api/buscaEndereco/logadouro/rua caique
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+###Testar Request Rua
+#Retorno json
+$ curl -H 'content-type: application/json' -H 'Accept: application/json' -v -X GET http://127.0.0.1:8000/api/buscaEndereco/cep/92425553
 
-## License
+#Retorno XML
+$ curl -H 'content-type: application/json' -H 'Accept: application/xml' -v -X GET http://127.0.0.1:8000/api/buscaEndereco/cep/82425553?xml
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Acessar pelo Browser
+http://127.0.0.1:8000/api/buscaEndereco/cep/82425553 ou 82425553?xml
+````
+
+
