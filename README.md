@@ -177,6 +177,20 @@ git clone https://github.com/Thalesrup/apiConsultaCep
 # Acessar projeto
 cd apiConsultaCep
 
+# Gerar .env
+cp .env.example .env
+
+#M Adicionar Parametros em .env
+cp .env.example .env
+
+URL_CONSULTA_CORREIOS=http://www.buscacep.correios.com.br/sistemas/buscacep/resultadoBuscaCepEndereco.cfm
+CONSULTA_POR_CEP=relaxation
+CONSULTA_POR_ENDERECO=relaxation
+
+#Gerar Key
+
+php artisan key:generate
+
 # Executar
 composer install
 php artisan serve
