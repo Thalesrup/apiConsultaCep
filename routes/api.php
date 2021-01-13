@@ -23,5 +23,5 @@ Route::get('buscaEndereco/cep/{cep}', [BuscaCepLogadouroController::class, 'getC
 Route::get('buscaEndereco/logadouro/{logadouro}', [BuscaCepLogadouroController::class, 'getLogadouro']);
 
 Route::fallback(function(){
-    return response()->json(['message' => ''], 404);
+    return response()->json(['message' => 'Not Found, verifique a Rota Utilizada e os Parametros Informados'], 404);
 })->name('api.fallback.404');
