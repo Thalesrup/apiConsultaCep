@@ -4,6 +4,18 @@
 ApiConsultaCep usa como base para consulta http://www.buscacep.correios.com.br/sistemas/buscacep/resultadoBuscaCepEndereco.cfm
 ####
 
+#### Para teste
+
+Logadouro:
+GET http://webserver666.online/apiConsulta/public/api/buscaEndereco/logadouro/av brasil     - retorno Padrão Json
+GET http://webserver666.online/apiConsulta/public/api/buscaEndereco/logadouro/av brasil&xml - retorno xml
+
+Cep:
+GET http://webserver666.online/apiConsulta/public/api/buscaEndereco/cep/92425553     - retorno padrão json
+GET http://webserver666.online/apiConsulta/public/api/buscaEndereco/cep/92425553&xml - retorno xml
+
+
+
 ### Highlights
 
 - Utilizado Laravel Framework 8
