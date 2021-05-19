@@ -34,7 +34,7 @@ URL:
 <p>
 Exemplo: /api/buscaEndereco/cep/92425553 ou 92425-553
 <p>
-Exemplo Utilizando callback xml: /api/buscaEndereco/cep/92425553?xml
+Exemplo Utilizando callback xml: /api/buscaEndereco/cep/92425553&xml
 <p>
 Método:
 GET <p>
@@ -94,7 +94,7 @@ Exemplo: /api/buscaEndereco/logadouro/rua caique ou 92425553
 <p>
 Pode ser passado tanto Rua, avenida, Cidade, CEP ect, como parametro
 <p>
-Exemplo Utilizando callback xml: /api/buscaEndereco/logadouro/av caique?xml
+Exemplo Utilizando callback xml: /api/buscaEndereco/logadouro/av caique&xml
 <p>
 Método:
 GET <p>
@@ -225,7 +225,7 @@ $ curl -H 'content-type: application/json' -H 'Accept: application/json' -v -X G
 $ curl -H 'content-type: application/json' -H 'Accept: application/xml' -v -X GET http://127.0.0.1:8000/api/buscaEndereco/cep/82425553?xml
 
 # Acessar pelo Browser
-http://127.0.0.1:8000/api/buscaEndereco/cep/82425553 ou 82425553?xml
+http://127.0.0.1:8000/api/buscaEndereco/cep/82425553 ou 82425553&xml
 ````
 
 
