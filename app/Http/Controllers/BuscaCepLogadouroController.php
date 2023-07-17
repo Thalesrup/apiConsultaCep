@@ -21,49 +21,105 @@ class BuscaCepLogadouroController extends ApiController
         }
 
         $this->requisicao = new BuscaCepLogadouro();
-        self::setTypeOutput(filter_input(INPUT_SERVER, 'QUERY_STRING'));
+        $params = $this->amountParams(1);
+
+        if ($params instanceof \Illuminate\Http\JsonResponse) {
+            return $params;
+        }
 
         $responseCorreios = $this->requisicao->buscar($request->cep);
 
-        return (self::getTypeOutout() == 'xml') ? $this->setSaida($responseCorreios) :
-         $this->sendResponse(
-            true,
-            'Requisição Bem Sucedida',
-            $responseCorreios,
-            200);
+        return (self::getTypeOutout() == 'xml')
+            ? $this->setSaida($responseCorreios)
+            : $this->sendResponse(
+                true,
+                'Requisição Bem Sucedida',
+                $responseCorreios,
+                200,
+            );
 
     }
 
     public function getLogadouro(Request $request)
     {
-        if(!is_string($request->logadouro)){
+        if(!is_string($request->logadouro)) {
             return $this->sendResponse(
                 false,
                 'Erro Ao Validar Logadouro, Digite uma string Válida Exemplo(av brasil ou avbrasil)',
                 false,
-                400);
+                400,
+            );
         }
 
         $this->requisicao = new BuscaCepLogadouro();
-        self::setTypeOutput(filter_input(INPUT_SERVER, 'QUERY_STRING'));
+        $allowedOffset = $this->getOffsetAllowed($request->logadouro);
+        $params = $this->amountParams($allowedOffset);
 
-        $responseCorreios = $this->requisicao->buscar($this->validaString($request->logadouro));
-
-        if(isset($responseCorreios->success)){
-            return $this->sendResponse(
-                $responseCorreios->success,
-                $responseCorreios->message,
-                false,
-                $responseCorreios->status);
+        if ($params instanceof \Illuminate\Http\JsonResponse) {
+            return $params;
         }
 
-        return (self::getTypeOutout() == 'xml') ? $this->setSaida($responseCorreios) :
-         $this->sendResponse(
-        true,
-        'Requisição Bem Sucedida',
-        $responseCorreios,
-        200);
+        $responseCorreios = $this->requisicao->buscar($this->sanitizeString($request->logadouro));
 
+        return (self::getTypeOutout() == 'xml')
+            ? $this->setSaida($responseCorreios)
+            : $this->sendResponse(
+                true,
+                'Requisição Bem Sucedida',
+                $responseCorreios,
+                200
+            );
+    }
+
+    public function getOffsetAllowed($parameter) 
+    {
+        $response = $this->requisicao->buscar($this->sanitizeString($parameter));
+        if (isset($response['allowedOffset'])) {
+            return $response['allowedOffset'];
+        }
+    }
+
+    public function amountParams($allowedOffset)
+    {
+        $request = Request::capture();
+        $queryStrings = $request->query();
+     
+        if (
+            isset($queryStrings['output']) && 
+            !array_search($queryStrings['output'], ['xml', 'json'])
+        ) {
+            self::setTypeOutput($queryStrings['output']);
+        }
+        
+        if (
+            isset($queryStrings['limit']) 
+            && isset($queryStrings['offset'])
+        ) {
+           return $this->queryClause($queryStrings+['allowedOffset' => $allowedOffset]);
+        }
+        
+    }
+
+    public function queryClause($queryStrings)
+    {
+        $limit = isset($queryStrings['limit']) ? abs($queryStrings['limit']) : 0;
+        $offset = isset($queryStrings['offset']) ? abs($queryStrings['offset']) : 0;
+        
+        if ($limit - $offset > 50) {
+            $offset = $limit - 50;
+        }
+
+        if($limit > 50 || $queryStrings['allowedOffset'] < $offset) {
+            return $this->sendResponse(
+                false,
+                "Necessário informar inervalos de até 50 registro, Exemplo offset=100&limit=50, e respeitando o offset de {$queryStrings['allowedOffset']}",
+                false,
+                400,
+            );
+        } else {
+            self::setClauseQuery(['inicio' => $offset, 'final' => $limit + $offset -1]);
+        }
+        
     }
 
     public function validaCEP($cep)
@@ -77,19 +133,24 @@ class BuscaCepLogadouroController extends ApiController
     }
 
     public function setSaida($saidaCustom)
-    {
-        $returnXmlDocument = $this->mountResponseToXML($saidaCustom,'enderecos', 'endereco', 'lista Enderecos');
-        return response($returnXmlDocument)->header('Content-type', 'text/xml');
+    {   
+        return response($saidaCustom)->header('Content-type', 'text/xml');
     }
 
-    public function validaString($string){
-        $string    = iconv( "UTF-8" , "ASCII//TRANSLIT//IGNORE" , $string);
-        $string    = str_replace(" "," ",preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities(trim($string))));
+    public function sanitizeString($string)
+    {
+        $string = iconv("UTF-8", "ASCII//TRANSLIT//IGNORE", $string);
+        $string = preg_replace("/&([a-z])[a-z]+;/i", "$1", htmlentities(trim($string)));
 
-        $especiais = [".",",",";","!","@","#","%","¨","*","(",")","+","-","=", "§","$","|","\\",":","/","<",">","?","{","}","[","]","&","'",'"',"´","`","?",'“','”','$',"'","'"];
-        $string    = str_replace($especiais,"",trim($string));
+        $especials = [
+            '.', ',', ';', '!', '@', '#', '%', '¨', '*', 
+            '(', ')', '+', '-', '=', '§', '$', '|', '\\', 
+            ':', '/', '<', '>', '?', '{', '}', '[', ']', 
+            '&', "'", '"', '´', '`', '?', '“', '”', '$', 
+            "'", "'"
+        ];
 
-        return $string;
+        return str_replace($especials, '', trim($string));
     }
 
 }

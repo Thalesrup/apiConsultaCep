@@ -1,18 +1,23 @@
 # ApiCunsulta Endereços (CEP - Logadouro)
 
 #### About 
-ApiConsultaCep usa como base para consulta http://www.buscacep.correios.com.br/sistemas/buscacep/resultadoBuscaCepEndereco.cfm
+ApiConsultaCep usa como base para consulta https://buscacepinter.correios.com.br/app/endereco/carrega-cep-endereco.php
 ####
 
 #### Para teste
 
 Logadouro:
 GET http://webserver666.com/apiConsulta/public/api/buscaEndereco/logadouro/av brasil     - retorno Padrão Json
-GET http://webserver666.com/apiConsulta/public/api/buscaEndereco/logadouro/av brasil&xml - retorno xml
+GET http://webserver666.com/apiConsulta/public/api/buscaEndereco/logadouro/av brasil?xml - retorno xml
+
+<br>
+
+>  Com query String (limit e offset) - por padrão retorna até 50 registro, após isso necessário paginar
+GET http://webserver666.com/apiConsulta/public/api/buscaEndereco/logadouro/av brasil?limit=10&offset=500 - retorna 10 registro (limit a partir do registro 500)
 
 Cep:
 GET http://webserver666.com/apiConsulta/public/api/buscaEndereco/cep/92425553     - retorno padrão json
-GET http://webserver666.com/apiConsulta/public/api/buscaEndereco/cep/92425553&xml - retorno xml
+GET http://webserver666.com/apiConsulta/public/api/buscaEndereco/cep/92425553?output=xml - retorno xml
 
 
 
@@ -34,7 +39,7 @@ URL:
 <p>
 Exemplo: /api/buscaEndereco/cep/92425553 ou 92425-553
 <p>
-Exemplo Utilizando callback xml: /api/buscaEndereco/cep/92425553&xml
+Exemplo Utilizando callback xml: /api/buscaEndereco/cep/92425553?output=xml
 <p>
 Método:
 GET <p>
